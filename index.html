@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài tập tương tác - Hóa học</title>
+    <style>
+        :root {
+            --header-bg: #4CAF50;
+            --header-text: #FFEB3B;
+            --teacher-text: #2196F3;
+            --btn-login-bg: #E1BEE7;
+            --btn-login-text: #1565C0;
+            --btn-start-bg: #E0E0E0;
+            --btn-start-text: #2E7D32;
+            --border-light: #ffffff;
+            --border-dark: #777777;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f0f2f5;
+            box-sizing: border-box;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 3D Button Style */
+        .btn-3d {
+            border: 2px solid;
+            border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+            padding: 8px 15px;
+            font-weight: bold;
+            outline: none;
+            transition: all 0.1s;
+            user-select: none;
+        }
+        .btn-3d:active:not(:disabled) {
+            border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+            transform: translate(1px, 1px);
+            box-shadow: none;
+        }
+        .btn-3d:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--header-bg);
+            border: 4px solid;
+            border-color: #81C784 #1B5E20 #1B5E20 #81C784; /* 3D effect green */
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        }
+        h1 {
+            margin: 0;
+            color: var(--header-text);
+            text-transform: uppercase;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 2px #000;
+        }
+        .teacher-name {
+            color: var(--teacher-text); /* Blue */
+            font-weight: bold;
+            margin-top: 5px;
+            background-color: white;
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+        }
+
+        /* Control Bar */
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            background: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #btnLogin { background-color: var(--btn-login-bg); color: var(--btn-login-text); }
+        #btnStart { background-color: var(--btn-start-bg); color: var(--btn-start-text); }
+        #btnSubmit { background-color: #FF9800; color: white; }
+        
+        .score-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+        #scoreDisplay {
+            width: 50px;
+            height: 25px;
+            border: 2px inset #ccc;
+            background: #fff;
+            text-align: center;
+            line-height: 25px;
+            color: red;
+        }
+
+        .timer-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-left: auto;
+        }
+
+        /* Question Area */
+        #questionContainer {
+            flex: 1;
+            background: white;
+            border: 2px solid #999;
+            overflow-y: scroll; /* Always show scrollbar */
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        /* Custom Scrollbar */
+        #questionContainer::-webkit-scrollbar { width: 12px; }
+        #questionContainer::-webkit-scrollbar-track { background: #f1f1f1; }
+        #questionContainer::-webkit-scrollbar-thumb { background: #888; border-radius: 6px; }
+        #questionContainer::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .question-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+        }
+        .q-text { font-weight: bold; margin-bottom: 8px; color: #000; }
+        .q-options { margin-left: 10px; }
+        .q-option { display: block; margin: 5px 0; cursor: pointer; }
+        
+        /* Footer */
+        .footer-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 5px;
+        }
+        #btnRetry { background-color: #2196F3; color: white; }
+        #btnReview { background-color: #9C27B0; color: white; }
+        #btnExport { background-color: #607D8B; color: white; }
+        .review-warning {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8em;
+            color: #d32f2f;
+            margin-top: 5px;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 4px solid #4CAF50;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 90%;
+        }
+        .modal-header { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; text-align: center; color: #2E7D32; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .modal-footer { text-align: right; margin-top: 15px; }
+
+        /* Review Result Modal */
+        #reviewModal .modal-box { width: 90%; height: 80%; display: flex; flex-direction: column; }
+        .review-content {
+            flex: 1; overflow-y: auto; display: flex; gap: 10px; padding: 10px;
+        }
+        .review-col { flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #fafafa; overflow-y: auto; }
+        .review-col h3 { text-align: center; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        
+        .review-item { margin-bottom: 15px; padding: 10px; border-radius: 4px; border: 1px solid #eee; }
+        .review-item.correct { background-color: #E8F5E9; border-color: #A5D6A7; }
+        .review-item.incorrect { background-color: #FFEBEE; border-color: #EF9A9A; }
+        .explanation { font-size: 0.9em; color: #C62828; margin-top: 5px; font-style: italic; }
+
+        /* Chemistry specific overrides */
+        sup { font-size: 0.75em; vertical-align: super; }
+        sub { font-size: 0.75em; vertical-align: sub; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Bài tập tương tác - Kiểm tra kiến thức Tính chất hóa học của kim loại</h1>
+    <div class="teacher-name">Thầy Lê Nguyễn Cường</div>
+</header>
+
+<div class="control-bar">
+    <button id="btnLogin" class="btn-3d">🔑 Đăng nhập</button>
+    <button id="btnStart" class="btn-3d" disabled>📝 Làm bài</button>
+    <button id="btnSubmit" class="btn-3d" disabled>📤 Nộp bài</button>
+    
+    <div class="score-box">
+        <span>Tổng điểm:</span>
+        <div id="scoreDisplay"></div>
+    </div>
+    
+    <div class="timer-box">
+        <span>⏳</span>
+        <span id="timer">20:00</span>
+    </div>
+</div>
+
+<div id="questionContainer">
+    <div style="text-align: center; color: #777; margin-top: 50px;">
+        Vui lòng Đăng nhập và bấm Làm bài để bắt đầu.
+    </div>
+</div>
+
+<div class="footer-bar">
+    <div>
+        <button id="btnRetry" class="btn-3d">🔄 Làm lại bài</button>
+        <button id="btnReview" class="btn-3d" disabled>👁️ Xem lại kết quả</button>
+        <div class="review-warning">Nếu bấm nút Xem lại kết quả thì không được phép làm lại</div>
+    </div>
+    <button id="btnExport" class="btn-3d">💾 Xuất file html</button>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">Thông tin học sinh</div>
+        <div class="form-group">
+            <label>Họ và tên (*):</label>
+            <input type="text" id="inputName">
+        </div>
+        <div class="form-group">
+            <label>Lớp (*):</label>
+            <input type="text" id="inputClass">
+        </div>
+        <div class="modal-footer">
+            <button id="confirmLogin" class="btn-3d" style="background:#4CAF50; color:white;">Xác nhận</button>
+            <button id="closeLogin" class="btn-3d" style="background:#f44336; color:white;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div id="reviewModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">Chi tiết kết quả</div>
+        <div class="review-content">
+            <div class="review-col" id="sysResult">
+                <h3>Kết quả hệ thống</h3>
+                <!-- System answers inserted here -->
+            </div>
+            <div class="review-col" id="userResult">
+                <h3>Kết quả học sinh</h3>
+                <!-- Student answers inserted here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="document.getElementById('reviewModal').style.display='none'" class="btn-3d" style="background:#777; color:white;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ========== CONFIGURATION ========== */
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzrXhkgh2ABaj6Cmg5twtzlIjLzPDq18rHqkfWR2OVpNSCOnsLNc0SbA1z_yPX7Rl-gCg/exec"; // Thay URL deploy của bạn vào đây
+
+    /* ========== DATA: QUESTION BANK ========== */
+    // Helper to format text
+    const rawQuestions = [
+        {
+            id: 1, type: "mcq",
+            q: "Kim loại nào sau đây phản ứng dung dịch CuSO<sub>4</sub> tạo thành hai chất kết tủa?",
+            options: ["Na", "Fe", "Ba", "Zn"],
+            correct: "Ba",
+            hint: "Ba tác dụng với nước tạo Ba(OH)<sub>2</sub>, sau đó tác dụng CuSO<sub>4</sub> tạo Cu(OH)<sub>2</sub> và BaSO<sub>4</sub>."
+        },
+        {
+            id: 2, type: "mcq",
+            q: "Kim loại nào sau đây khi tác dụng với HCl; Tác dụng với Cl<sub>2</sub> (được nung nóng) tạo thành cùng một sản phẩm muối chloride?",
+            options: ["Fe", "Ag", "Zn", "Cu"],
+            correct: "Zn",
+            hint: "Fe tạo Fe(II) với HCl và Fe(III) với Cl<sub>2</sub>. Ag, Cu không tác dụng HCl. Zn tạo ZnCl<sub>2</sub> ở cả 2 trường hợp."
+        },
+        {
+            id: 3, type: "mcq",
+            q: "Kẽm( Zinc) khử được cation kim loại trong dãy muối nào dưới đây?",
+            options: ["Cu(NO<sub>3</sub>)<sub>2</sub>, Pb(NO<sub>3</sub>)<sub>2</sub>, Ni(NO<sub>3</sub>)<sub>2</sub>", 
+                      "AlCl<sub>3</sub>, MgCl<sub>2</sub>, Pb(NO<sub>3</sub>)<sub>2</sub>",
+                      "AlCl<sub>3</sub>, Ni(NO<sub>3</sub>)<sub>2</sub>, Pb(NO<sub>3</sub>)<sub>2</sub>",
+                      "MgCl<sub>2</sub>, NaCl, Cu(NO<sub>3</sub>)<sub>2</sub>"],
+            correct: "Cu(NO<sub>3</sub>)<sub>2</sub>, Pb(NO<sub>3</sub>)<sub>2</sub>, Ni(NO<sub>3</sub>)<sub>2</sub>",
+            hint: "Zn đứng trước Cu, Pb, Ni trong dãy điện hóa nên khử được các ion này."
+        },
+        {
+            id: 4, type: "mcq",
+            q: "Thí nghiệm nào sau đây không xảy ra phản ứng?",
+            options: ["Cho kim loại Ag vào dung dịch HCl", 
+                      "Cho kim loại Cu vào dung dịch HNO<sub>3</sub>", 
+                      "Cho kim loại Fe vào dung dịch Fe<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub>", 
+                      "Cho kim loại Zn vào dung dịch CuSO<sub>4</sub>"],
+            correct: "Cho kim loại Ag vào dung dịch HCl",
+            hint: "Ag đứng sau H trong dãy hoạt động hóa học nên không tác dụng HCl."
+        },
+        {
+            id: 5, type: "mcq",
+            q: "Kim loại nào sau đây phản ứng được với dung dịch FeSO<sub>4</sub> và dung dịch HNO<sub>3</sub> đặc, nguội?",
+            options: ["Mg", "Al", "Cr", "Cu"],
+            correct: "Mg",
+            hint: "Al, Cr, Fe bị thụ động hóa trong HNO<sub>3</sub> đặc nguội. Cu không đẩy được Fe."
+        },
+        {
+            id: 6, type: "mcq",
+            q: "Dãy kim loại nào sau đây có phản ứng với dung dịch sulfuric acid đặc, nóng tạo thành khí sulfur dioxide?",
+            options: ["Na, K, Au", "Al, Fe, Cu", "Ag, Au, Pt", "Cu, Ag, Au"],
+            correct: "Al, Fe, Cu",
+            hint: "Au, Pt không phản ứng."
+        },
+        {
+            id: 7, type: "mcq",
+            q: "Đốt một sợi dây kim loại X trong bình khí chlorine (Cl<sub>2</sub>) thấy tạo ra khói màu nâu đỏ. X là kim loại nào sau đây?",
+            options: ["Mg", "Al", "Fe", "Cu"],
+            correct: "Fe",
+            hint: "Fe tác dụng Cl<sub>2</sub> tạo FeCl<sub>3</sub> màu nâu đỏ."
+        },
+        {
+            id: 8, type: "mcq",
+            q: "Kim loại nào sau đây không phản ứng được với HCl trong dung dịch?",
+            options: ["Ni", "Zn", "Fe", "Cu"],
+            correct: "Cu",
+            hint: "Cu đứng sau H."
+        },
+        {
+            id: 9, type: "mcq",
+            q: "Kim loại nào sau đây không phản ứng được với dung dịch CuSO<sub>4</sub>?",
+            options: ["Mg", "Fe", "Zn", "Ag"],
+            correct: "Ag",
+            hint: "Ag đứng sau Cu."
+        },
+        {
+            id: 10, type: "mcq",
+            q: "Cho dãy các kim loại: Al, Cu, Fe, Ag. Số kim loại trong dãy phản ứng được với dung dịch H<sub>2</sub>SO<sub>4</sub> loãng là",
+            options: ["1", "2", "3", "4"],
+            correct: "2",
+            hint: "Chỉ có Al và Fe phản ứng."
+        },
+        {
+            id: 11, type: "mcq",
+            q: "Dãy kim loại nào sau đây không đẩy đồng ra khỏi dung dịch copper(II) sulfate?",
+            options: ["Na, K, Ag", "Al, Fe, Mg", "Al, Zn, Pb", "Mg, Zn, Fe"],
+            correct: "Na, K, Ag",
+            hint: "Na, K tan trong nước trước. Ag đứng sau Cu."
+        },
+        {
+            id: 12, type: "mcq",
+            q: "Phương trình hóa học nào sau đây là sai?",
+            options: ["2Na + 2H<sub>2</sub>O → 2NaOH + H<sub>2</sub>", 
+                      "Ca + 2HCl → CaCl<sub>2</sub> + H<sub>2</sub>", 
+                      "Fe + CuSO<sub>4</sub> → FeSO<sub>4</sub> + Cu", 
+                      "Cu + H<sub>2</sub>SO<sub>4</sub> → CuSO<sub>4</sub> + H<sub>2</sub>"],
+            correct: "Cu + H<sub>2</sub>SO<sub>4</sub> → CuSO<sub>4</sub> + H<sub>2</sub>",
+            hint: "Cu không tác dụng H<sub>2</sub>SO<sub>4</sub> loãng."
+        },
+        {
+            id: 13, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Các kim loại Na, K, Ba đều phản ứng mạnh với nước.”",
+            correct: "Đúng", hint: "Đây là các kim loại kiềm/kiềm thổ hoạt động mạnh."
+        },
+        {
+            id: 14, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Kim loại có nhiệt độ nóng chảy cao nhất là Wolfram (W).”",
+            correct: "Đúng", hint: "W nóng chảy ở khoảng 3422°C."
+        },
+        {
+            id: 15, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Kim loại Al tan trong dung dịch H<sub>2</sub>SO<sub>4</sub> đặc, nguội.”",
+            correct: "Sai", hint: "Al bị thụ động hóa trong H<sub>2</sub>SO<sub>4</sub> đặc nguội."
+        },
+        {
+            id: 16, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Dùng bột sulfur (S) để xử lý thuỷ ngân rơi vãi khi nhiệt kế bị vỡ.”",
+            correct: "Đúng", hint: "Hg + S -> HgS xảy ra ở nhiệt độ thường."
+        },
+        {
+            id: 17, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Các kim loại Al, Fe, Cr đều tan tốt trong dung dịch HNO<sub>3</sub> đặc, nguội.”",
+            correct: "Sai", hint: "Al, Fe, Cr bị thụ động hóa."
+        },
+        {
+            id: 18, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “W là kim loại cứng nhất, Cr là kim loại có nhiệt độ nóng chảy cao nhất.”",
+            correct: "Sai", hint: "Cr cứng nhất, W nóng chảy cao nhất."
+        },
+        {
+            id: 19, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Các kim loại Al, Fe đều không tan trong dung dịch H<sub>2</sub>SO<sub>4</sub> loãng, nguội.”",
+            correct: "Sai", hint: "Al, Fe tan tốt trong H<sub>2</sub>SO<sub>4</sub> loãng."
+        },
+        {
+            id: 20, type: "tf",
+            q: "Phát biểu sau đây đúng hay sai: “Do E<sup>0</sup>(Ag<sup>+</sup>/Ag) > E<sup>0</sup>(2H<sup>+</sup>/H<sub>2</sub>) nên Ag không tan trong dung dịch HCl 1M dư.”",
+            correct: "Đúng", hint: "Thế điện cực chuẩn lớn hơn H nên tính khử yếu hơn H2, không đẩy được H."
+        },
+        {
+            id: 21, type: "short",
+            q: "Cho các tính chất của kim loại: Tính dẻo, tính cứng, tính dẫn điện, ánh kim, khối lượng riêng, tính dẫn nhiệt. Có bao nhiêu tính chất vật lí riêng của kim loại trong các tính chất trên?",
+            correct: "2", hint: "Tính cứng và Khối lượng riêng là tính chất riêng. Còn lại là tính chất chung."
+        },
+        {
+            id: 22, type: "short",
+            q: "Cho các kim loại: Mg, Al, Zn, Fe, Cu. Có bao nhiêu kim loại đã cho tác dụng được với cả ba dung dịch: H<sub>2</sub>SO<sub>4</sub> loãng, CuSO<sub>4</sub> và H<sub>2</sub>SO<sub>4</sub> (đặc, nguội)?",
+            correct: "2", hint: "Là Mg và Zn. (Al, Fe thụ động; Cu không td H2SO4 loãng)."
+        },
+        {
+            id: 23, type: "short",
+            q: "Cho dãy các kim loại: Fe, Cu, Mg, Ag, Al, Na, Ba. Số kim loại trong dãy phản ứng được với dung dịch HCl là bao nhiêu?",
+            correct: "5", hint: "Na, Ba, Mg, Al, Fe."
+        },
+        {
+            id: 24, type: "short",
+            q: "Cho 11,9 gam hỗn hợp Zn và Al phản ứng vừa đủ với dung dịch dịch H<sub>2</sub>SO<sub>4</sub> loãng, thu được m gam muối trung hòa và 9,916 lít khí H<sub>2</sub> (đkc). Giá trị của m là",
+            correct: "50,3", hint: "m muối = mKL + mSO4. nH2 = 9.916/24.79 = 0.4 mol -> nSO4 = 0.4. m = 11.9 + 0.4*96 = 50.3g."
+        },
+        {
+            id: 25, type: "short",
+            q: "Hòa tan hoàn toàn 2,4 gam Mg bằng dung dịch HCl dư, thu được V lít khí H<sub>2</sub> (đkc). Giá trị của V là",
+            correct: "2,479", hint: "nMg = 0.1 -> nH2 = 0.1 -> V = 0.1 * 24.79 = 2.479."
+        }
+    ];
+
+    /* ========== APP STATE ========== */
+    let userInfo = { name: "", class: "" };
+    let currentQuestions = [];
+    let userAnswers = {}; // { qId: answer_value }
+    let timerInterval = null;
+    let timeLeft = 1200;
+    let isSubmittable = false;
+    let hasReachedBottom = false;
+
+    /* ========== DOM ELEMENTS ========== */
+    const els = {
+        loginModal: document.getElementById('loginModal'),
+        inputName: document.getElementById('inputName'),
+        inputClass: document.getElementById('inputClass'),
+        btnLogin: document.getElementById('btnLogin'),
+        btnStart: document.getElementById('btnStart'),
+        btnSubmit: document.getElementById('btnSubmit'),
+        btnRetry: document.getElementById('btnRetry'),
+        btnReview: document.getElementById('btnReview'),
+        btnExport: document.getElementById('btnExport'),
+        container: document.getElementById('questionContainer'),
+        scoreDisplay: document.getElementById('scoreDisplay'),
+        timer: document.getElementById('timer'),
+        reviewModal: document.getElementById('reviewModal'),
+        sysResult: document.getElementById('sysResult'),
+        userResult: document.getElementById('userResult'),
+        confirmLogin: document.getElementById('confirmLogin'),
+        closeLogin: document.getElementById('closeLogin')
+    };
+
+    /* ========== UTILS ========== */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function formatTime(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    /* ========== CORE FUNCTIONS ========== */
+
+    // 1. Login Logic
+    els.btnLogin.onclick = () => { els.loginModal.style.display = 'flex'; };
+    els.closeLogin.onclick = () => { els.loginModal.style.display = 'none'; };
+    
+    els.confirmLogin.onclick = () => {
+        const name = els.inputName.value.trim();
+        const lop = els.inputClass.value.trim();
+        if(!name || !lop) {
+            alert("Vui lòng điền đầy đủ Họ tên và Lớp!");
+            return;
+        }
+        userInfo.name = name;
+        userInfo.class = lop;
+        els.loginModal.style.display = 'none';
+        els.btnStart.disabled = false;
+        els.btnLogin.innerText = `👤 ${name}`;
+        els.btnLogin.disabled = true;
+    };
+
+    // 2. Start / Generate Exam
+    els.btnStart.onclick = () => {
+        startExam();
+    };
+
+    function startExam() {
+        els.btnStart.disabled = true;
+        els.btnRetry.disabled = true; // Only enabled after submit/reset
+        
+        // Shuffle Questions
+        currentQuestions = JSON.parse(JSON.stringify(rawQuestions)); // Deep copy
+        shuffleArray(currentQuestions);
+
+        // Shuffle Options for MCQ
+        currentQuestions.forEach(q => {
+            if(q.type === 'mcq') {
+                // Keep track of content, shuffle content
+                // q.options is array of strings
+                shuffleArray(q.options);
+            }
+        });
+
+        renderQuestions();
+        
+        // Start Timer
+        timeLeft = 1200;
+        els.timer.innerText = formatTime(timeLeft);
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            els.timer.innerText = formatTime(timeLeft);
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitExam(true); // Auto submit
+            }
+        }, 1000);
+
+        // Scroll listener reset
+        hasReachedBottom = false;
+        checkSubmitCondition();
+    }
+
+    function renderQuestions() {
+        els.container.innerHTML = "";
+        userAnswers = {};
+
+        currentQuestions.forEach((q, index) => {
+            const div = document.createElement('div');
+            div.className = 'question-item';
+            
+            // Question Text
+            const qTitle = document.createElement('div');
+            qTitle.className = 'q-text';
+            qTitle.innerHTML = `Câu ${index + 1}. ${q.q}`;
+            div.appendChild(qTitle);
+
+            // Inputs
+            if (q.type === 'mcq') {
+                const labels = ['A', 'B', 'C', 'D'];
+                const optsDiv = document.createElement('div');
+                optsDiv.className = 'q-options';
+                q.options.forEach((opt, idx) => {
+                    const label = document.createElement('label');
+                    label.className = 'q-option';
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `q_${q.id}`;
+                    radio.value = opt; // Value is the content string
+                    radio.onclick = () => handleInput(q.id, opt);
+                    
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(` ${labels[idx]}. `));
+                    const span = document.createElement('span');
+                    span.innerHTML = opt;
+                    label.appendChild(span);
+                    optsDiv.appendChild(label);
+                });
+                div.appendChild(optsDiv);
+            } else if (q.type === 'tf') {
+                const optsDiv = document.createElement('div');
+                optsDiv.className = 'q-options';
+                ['Đúng', 'Sai'].forEach(val => {
+                    const label = document.createElement('label');
+                    label.className = 'q-option';
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `q_${q.id}`;
+                    radio.value = val;
+                    radio.onclick = () => handleInput(q.id, val);
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(` ${val}`));
+                    optsDiv.appendChild(label);
+                });
+                div.appendChild(optsDiv);
+            } else if (q.type === 'short') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.style.marginLeft = '10px';
+                input.oninput = (e) => handleInput(q.id, e.target.value);
+                div.appendChild(input);
+            }
+
+            els.container.appendChild(div);
+        });
+    }
+
+    // 3. Interaction & Validation
+    function handleInput(qId, value) {
+        if(typeof value === 'string' && value.trim() !== "") {
+            userAnswers[qId] = value.trim();
+        } else {
+            delete userAnswers[qId];
+        }
+        checkSubmitCondition();
+    }
+
+    els.container.onscroll = () => {
+        // Allow a small buffer (5px)
+        const isBottom = els.container.scrollTop + els.container.clientHeight >= els.container.scrollHeight - 5;
+        if (isBottom) {
+            hasReachedBottom = true;
+            checkSubmitCondition();
+        }
+    };
+
+    function checkSubmitCondition() {
+        const answeredCount = Object.keys(userAnswers).length;
+        const total = currentQuestions.length;
+        // Conditions: All answered AND Scrolled to bottom
+        if (answeredCount === total && hasReachedBottom) {
+            els.btnSubmit.disabled = false;
+        } else {
+            els.btnSubmit.disabled = true;
+        }
+    }
+
+    // 4. Submit & Scoring
+    els.btnSubmit.onclick = () => submitExam(false);
+
+    function submitExam(isAuto) {
+        clearInterval(timerInterval);
+        
+        // Disable controls
+        els.btnSubmit.disabled = true;
+        els.btnStart.disabled = true;
+        
+        // Disable all inputs
+        const inputs = els.container.querySelectorAll('input');
+        inputs.forEach(i => i.disabled = true);
+
+        // Grade
+        let correctCount = 0;
+        currentQuestions.forEach(q => {
+            const uAns = userAnswers[q.id] || "";
+            // Logic check
+            let isCorrect = false;
+            if (q.type === 'short') {
+                // Number comparison or string match, case insensitive, allow spaces
+                const cleanU = uAns.toString().replace(/\s+/g, '').toLowerCase().replace(',', '.');
+                const cleanC = q.correct.toString().replace(/\s+/g, '').toLowerCase().replace(',', '.');
+                if (cleanU === cleanC) isCorrect = true;
+            } else {
+                // MCQ/TF: Exact string match of content
+                if (uAns === q.correct) isCorrect = true;
+            }
+            if(isCorrect) correctCount++;
+        });
+
+        const score = (correctCount * 10) / currentQuestions.length;
+        const roundedScore = Math.round(score * 10) / 10;
+        
+        els.scoreDisplay.innerText = roundedScore;
+
+        // Post to Sheet
+        const postData = {
+            hoTen: userInfo.name,
+            lop: userInfo.class,
+            diem: roundedScore,
+            soDung: correctCount,
+            tongSoCau: currentQuestions.length
+        };
+
+        if(WEB_APP_URL.includes("exec")) {
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // standard for GAS Web App
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            }).then(() => {
+                console.log("Submitted to Sheet");
+            }).catch(e => {
+                alert("Không thể lưu Google Sheet do mất kết nối mạng");
+            });
+        } else {
+            console.warn("Chưa cấu hình URL Web App");
+        }
+
+        // Enable Footer buttons
+        els.btnReview.disabled = false;
+        els.btnRetry.disabled = false;
+    }
+
+    // 5. Review & Retry
+    els.btnReview.onclick = () => {
+        // Show Modal
+        els.reviewModal.style.display = 'flex';
+        els.sysResult.innerHTML = "<h3>Kết quả hệ thống</h3>";
+        els.userResult.innerHTML = "<h3>Kết quả học sinh</h3>";
+
+        currentQuestions.forEach((q, i) => {
+            const uAns = userAnswers[q.id] || "(Chưa trả lời)";
+            
+            // Check correctness again for display
+            let isCorrect = false;
+            if (q.type === 'short') {
+                const cleanU = uAns.toString().replace(/\s+/g, '').toLowerCase().replace(',', '.');
+                const cleanC = q.correct.toString().replace(/\s+/g, '').toLowerCase().replace(',', '.');
+                if (cleanU === cleanC) isCorrect = true;
+            } else {
+                if (uAns === q.correct) isCorrect = true;
+            }
+
+            // Render Left (System)
+            const sysDiv = document.createElement('div');
+            sysDiv.className = 'review-item';
+            sysDiv.innerHTML = `<b>Câu ${i+1}:</b> ${q.correct}`;
+            els.sysResult.appendChild(sysDiv);
+
+            // Render Right (User)
+            const usrDiv = document.createElement('div');
+            usrDiv.className = `review-item ${isCorrect ? 'correct' : 'incorrect'}`;
+            let html = `<b>Câu ${i+1}:</b> ${uAns}`;
+            if (!isCorrect) {
+                html += `<div class="explanation">Gợi ý: ${q.hint}</div>`;
+            }
+            usrDiv.innerHTML = html;
+            els.userResult.appendChild(usrDiv);
+        });
+
+        // Disable Retry forever
+        els.btnRetry.disabled = true;
+    };
+
+    els.btnRetry.onclick = () => {
+        if(confirm("Bạn có chắc chắn muốn làm lại? Dữ liệu cũ sẽ bị xóa.")) {
+            // Reset
+            els.scoreDisplay.innerText = "";
+            els.timer.innerText = "20:00";
+            els.btnReview.disabled = true;
+            els.btnSubmit.disabled = true;
+            hasReachedBottom = false;
+            
+            // Require login again? Prompt says "cho phép đăng nhập mới"
+            userInfo = { name: "", class: "" };
+            els.btnLogin.disabled = false;
+            els.btnLogin.innerText = "🔑 Đăng nhập";
+            els.container.innerHTML = '<div style="text-align: center; color: #777; margin-top: 50px;">Vui lòng Đăng nhập và bấm Làm bài để bắt đầu.</div>';
+            els.btnStart.disabled = true;
+        }
+    };
+
+    // 6. Export HTML
+    els.btnExport.onclick = () => {
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
+</script>
+
+</body>
+</html>
